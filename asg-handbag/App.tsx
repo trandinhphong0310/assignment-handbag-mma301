@@ -4,41 +4,16 @@ import DetailScreen from './components/DetailScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FavoriteList from './components/FavoriteList';
+import { RootStackParamList, TabParamList } from './types/types';
 
-export type RootStackParamList = {
-  HomeTabs: undefined;
-  Detail: {
-    id: String,
-    handbagName: String,
-    cost: Number,
-    category?: String,
-    color?: Array<String>,
-    gender?: Boolean,
-    uri: String,
-    brand: String,
-    percentOff: Number,
-    rating: Number,
-    isFavorite: Boolean,
-    description: String,
-    feedback: Array<Object>
-  }
-}
-
-export type TabParamList = {
-  Home: undefined;
-  FavoriteList: {
-    isFavorite: Boolean
-  }
-}
-
-const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
 
 function HomeTabs() {
   return (
     <Tab.Navigator>
       <Tab.Screen
-        name="Home"
+        name="HomeTabs"
         component={HomeScreen}
         options={{ headerShown: false }} />
       <Tab.Screen name="Favorite List" component={FavoriteList} />
