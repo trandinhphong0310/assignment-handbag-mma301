@@ -1,9 +1,9 @@
 import { View, Text } from 'react-native'
 
-export default function DetailScreen() {
+export default function FavoriteList() {
   return (
     <View>
-      <Text>DetailScreen</Text>
+      <Text>FavoriteList</Text>
     </View>
   )
 }
