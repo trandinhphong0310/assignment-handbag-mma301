@@ -1,62 +1,20 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native'
+import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAllHandbag } from '../apis/api'
 import { useEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import styles from '../assets/css/home.styles';
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 22,
-    borderBottomColor: "#ccc",
-    borderBottomWidth: 1,
-    marginBottom: 16
-  },
-  titleHeader: {
-    fontSize: 16,
-  },
-  titleProducts: {
-    fontSize: 24,
-    padding: 8
-  },
-  listItem: {
-    borderColor: "#ccc",
-    borderWidth: 1,
-    width: '50%',
-    padding: 8,
-  },
-  image: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'contain',
-    marginTop: 12
-  },
-  handbagName: {
-    fontSize: 16,
-
-  },
-  cost: {
-    fontWeight: 500,
-    fontSize: 16,
-    marginTop: 8,
-  },
-  favorite: {
-    position: 'absolute',
-    right: 0,
-    marginTop: 8,
-    marginRight: 8,
-  }
-})
-
-export default function HomeScreen() {
+export default function Home() {
 
   const [handbag, setHandbag] = useState([])
   const [category, setCategory] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [favorites, setFavorites] = useState([])
+  const [unfavorites, setUnfavorites] = useState([])
   const navigation = useNavigation()
 
   useEffect(() => {
@@ -69,6 +27,66 @@ export default function HomeScreen() {
         }
       })
   }, [])
+
+  useEffect(() => {
+    loadFavorites()
+  }, [])
+
+  const loadFavorites = async () => {
+    try {
+      const savedFavorites = await AsyncStorage.getItem("favorites")
+      const savedUnfavorites = await AsyncStorage.getItem("unfavorites")
+
+      if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites))
+      }
+      if (savedUnfavorites) {
+        setUnfavorites(JSON.parse(savedUnfavorites))
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const saveFavorites = async (newFavorites, newUnfavorites) => {
+    try {
+      await AsyncStorage.setItem("favorites", JSON.stringify(newFavorites))
+      await AsyncStorage.setItem("unfavorites", JSON.stringify(newUnfavorites))
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const handleFavorite = (item) => {
+    let newFavorites = [...favorites]
+    let newUnfavorites = [...unfavorites]
+
+    if (item.isFavorite) {
+      if (unfavorites.includes(item.id)) {
+        newUnfavorites = unfavorites.filter(id => id !== item.id)
+      } else {
+        newUnfavorites = [...unfavorites, item.id]
+      }
+    } else {
+      if (favorites.includes(item.id)) {
+        newFavorites = favorites.filter(id => id !== item.id)
+      } else {
+        newFavorites = [...favorites, item.id]
+      }
+    }
+
+    setFavorites(newFavorites)
+    setUnfavorites(newUnfavorites)
+    saveFavorites(newFavorites, newUnfavorites)
+  }
+
+  const isFavoriteItem = (item) => {
+    if (item.isFavorite) {
+      return !unfavorites.includes(item.id)
+    } else {
+      return favorites.includes(item.id)
+    }
+  }
 
   const displayHandbags = selectedCategory === 'All'
     ? handbag
@@ -117,14 +135,22 @@ export default function HomeScreen() {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity
-                onPress={() => navigation.navigate('Detail')}
+                onPress={() => navigation.navigate('Detail', { product: item, isFavoriteUser: isFavoriteItem(item) })}
                 style={styles.listItem}
               >
+                <View style={styles.discountBadge}>
+                  <Text style={styles.discountText}>-{Math.round(item.percentOff * 100)}%</Text>
+                </View>
                 <Image
                   style={styles.image}
                   source={{ uri: item.uri }}
                 />
-                <Text style={styles.favorite}>{item.isFavorite ? <MaterialIcons name="favorite-outline" size={24} color="black" /> : ''}</Text>
+                <TouchableOpacity style={styles.favorite} onPress={() => handleFavorite(item)}>
+                  {isFavoriteItem(item)
+                    ? <MaterialIcons name={"favorite"} size={24} color={"red"} />
+                    : <MaterialIcons name={"favorite-outline"} size={24} color={"black"} />
+                  }
+                </TouchableOpacity>
                 <Text style={styles.handbagName}>{item.handbagName}</Text>
                 <Text style={styles.cost}>${item.cost}</Text>
               </TouchableOpacity>
