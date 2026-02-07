@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#333',
-        marginBottom: 4
+        marginBottom: 4,
     },
     tableBrand: {
         fontSize: 14,

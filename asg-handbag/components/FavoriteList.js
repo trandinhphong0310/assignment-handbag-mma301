@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native'
+import { View, Text, TouchableOpacity, FlatList, Image, ScrollView } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useEffect, useState } from 'react'
 import { getAllHandbag } from '../apis/api'
@@ -77,15 +77,18 @@ export default function FavoriteList() {
               style={styles.tableRow}
               onPress={() => navigation.navigate("Detail", { product: item })}
             >
-              <Image source={{ uri: item.uri }} style={styles.tableImage}/>
-              <Text style={styles.tableName}>{item.handbagName}</Text>
-              <Text style={styles.tableBrand}>{item.brand}</Text>
-              <Text style={styles.tableCost}>${item.cost}</Text>
+              <Image source={{ uri: item.uri }} style={styles.tableImage} />
+              <View style={styles.tableInfo}>
+                <Text style={styles.tableName} numberOfLines={2}>{item.handbagName}</Text>
+                <Text style={styles.tableBrand}>{item.brand}</Text>
+                <Text style={styles.tableCost}>${item.cost}</Text>
+              </View>
               <TouchableOpacity
                 style={styles.tableFavorite}
                 onPress={() => removeFavoriteItems(item)}
-              />
-              <MaterialIcons name="favorite" size={24} color="red" />
+              >
+                <MaterialIcons name="favorite" size={24} color="red" />
+              </TouchableOpacity>
             </TouchableOpacity>
           )
         }}
